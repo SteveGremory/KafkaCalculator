@@ -51,7 +51,8 @@ public:
 	 * @param rhs The number being added.
 	 * @returns The sum of `lhs` and `rhs`.
 	 */
-	[[nodiscard]] auto add(auto lhs, auto rhs) noexcept -> auto
+	[[nodiscard]] constexpr auto add(const auto lhs, const auto rhs) noexcept
+		-> auto
 		requires Arithmetic<decltype(lhs)> && Arithmetic<decltype(rhs)>
 	{
 		return lhs + rhs;
@@ -67,7 +68,8 @@ public:
 	 * @param rhs The number being subtracted.
 	 * @returns The difference between `lhs` and `rhs`.
 	 */
-	[[nodiscard]] auto subtract(auto lhs, auto rhs) noexcept -> auto
+	[[nodiscard]] constexpr auto subtract(const auto lhs,
+										  const auto rhs) noexcept -> auto
 		requires Arithmetic<decltype(lhs)> && Arithmetic<decltype(rhs)>
 	{
 		return lhs - rhs;
@@ -83,7 +85,8 @@ public:
 	 * @param rhs The number being multiplied.
 	 * @returns The product of `lhs` and `rhs`.
 	 */
-	[[nodiscard]] auto multiply(auto lhs, auto rhs) noexcept -> auto
+	[[nodiscard]] constexpr auto multiply(const auto lhs,
+										  const auto rhs) noexcept -> auto
 		requires Arithmetic<decltype(lhs)> && Arithmetic<decltype(rhs)>
 	{
 		return lhs * rhs;
@@ -100,7 +103,7 @@ public:
 	 * @param rhs The dividend.
 	 * @returns The result of dividing `lhs` by `rhs`.
 	 */
-	[[nodiscard]] auto divide(auto lhs, auto rhs) -> auto
+	[[nodiscard]] constexpr auto divide(const auto lhs, const auto rhs) -> auto
 		requires Arithmetic<decltype(lhs)> && Arithmetic<decltype(rhs)>
 	{
 		if (rhs == 0) {
@@ -118,7 +121,7 @@ public:
 	 * @param num The number who's factorial is to be calculated
 	 * @returns The factorial of `num`
 	 */
-	[[nodiscard]] auto factorial(auto num) -> auto
+	[[nodiscard]] constexpr auto factorial(const auto num) -> auto
 		requires Integral<decltype(num)>
 	{
 		throw std::logic_error("Un-Implemented function, parameter: " +
