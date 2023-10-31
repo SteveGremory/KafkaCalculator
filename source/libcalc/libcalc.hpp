@@ -3,6 +3,9 @@
 
 #include <concepts>
 #include <cstdint>
+#include <functional>
+#include <mutex>
+#include <thread>
 
 namespace Calculator {
 
@@ -39,7 +42,7 @@ concept FloatingPoint = std::floating_point<T>;
  */
 class Calculator {
 public:
-	Calculator() = default;
+	Calculator();
 	~Calculator() = default;
 
 	/**
@@ -121,12 +124,28 @@ public:
 	 * @param num The number who's factorial is to be calculated
 	 * @returns The factorial of `num`
 	 */
-	[[nodiscard]] constexpr auto factorial(const auto num) -> auto
-		requires Integral<decltype(num)>
-	{
-		throw std::logic_error("Un-Implemented function, parameter: " +
-							   std::to_string(num));
-	}
+	[[nodiscard]] auto factorial(const uint64_t num) -> uint64_t;
+
+private:
+	/**
+	 * @brief Calculates the factorial within a specified range [start, end]
+	 * using a for loop. The result is updated in a thread-safe manner.
+	 *
+	 * @param start The start of the range for which to calculate the
+	 * factorial.
+	 * @param end   The end of the range for which to calculate the
+	 * factorial.
+	 *
+	 * This function calculates the factorial of the range [start, end] by
+	 * iterating through the numbers in the range and multiplying them
+	 * together. The result is then updated in a thread-safe manner using a
+	 * mutex to prevent data races.
+	 */
+	auto calculate_factorial_range(const uint64_t start,
+								   const uint64_t end) noexcept -> void;
+
+	uint64_t result;
+	std::mutex factorial_mutex;
 };
 
 } // namespace Calculator
