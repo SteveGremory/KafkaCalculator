@@ -7,21 +7,36 @@ set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Fetch dependancy: Catch2
 include(FetchContent)
+# Fetch dependancy: Catch2
 FetchContent_Declare(
-  Catch2
-  GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-  GIT_TAG        v3.0.1
-)
-# Fetch dependancy: cppkafka
-FetchContent_Declare(
-  Catch2
-  GIT_REPOSITORY https://github.com/mfontanini/cppkafka.git
-  GIT_TAG        v0.3.1
+    Catch2
+    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+    GIT_TAG        v3.0.1
 )
 
+# Fetch dependancy for CppKafka: librdkafka
+set(RDKAFKA_BUILD_EXAMPLES OFF ON CACHE INTERNAL "Turn off examples")
+set(RDKAFKA_BUILD_TESTS OFF CACHE INTERNAL "Turn off tests")
+FetchContent_Declare(
+    librdkafka
+    GIT_REPOSITORY https://github.com/confluentinc/librdkafka
+    GIT_TAG        v2.3.0
+)
+
+# Fetch dependancy: CppKafka
+set(CPPKAFKA_DISABLE_EXAMPLES ON CACHE INTERNAL "Turn off examples")
+set(CPPKAFKA_DISABLE_TESTS ON CACHE INTERNAL "Turn off tests")
+FetchContent_Declare(
+    CppKafka
+    GIT_REPOSITORY https://github.com/mfontanini/cppkafka.git
+    GIT_TAG        v0.3.1
+)
+
+
 FetchContent_MakeAvailable(Catch2)
+FetchContent_MakeAvailable(librdkafka)
+FetchContent_MakeAvailable(CppKafka)
 
 # Find clang tidy
 find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
@@ -48,6 +63,8 @@ target_include_directories(kafka-client
 )
 target_link_libraries(kafka-client PUBLIC
     calc
+    rdkafka
+    cppkafka
 )
 
 # Enable some compiler/linker options.
@@ -59,7 +76,7 @@ set(ASAN_OPTIONS
 
 target_compile_options(calc PUBLIC
     # Error options
-    -Wall -Wextra -Werror
+    -Wall -Wextra
     # Stack pointer
     -fno-omit-frame-pointer
     # Add asan options
@@ -76,7 +93,7 @@ target_link_options(calc PUBLIC
 
 target_compile_options(kafka-client PUBLIC
     # Error options
-    -Wall -Wextra -Werror
+    -Wall -Wextra
     # Stack pointer
     -fno-omit-frame-pointer
     # Add asan options
