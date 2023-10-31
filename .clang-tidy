@@ -1,0 +1,26 @@
+Checks: '*'
+CheckOptions:
+  - key: clang-analyzer-alpha
+    value: 'false'
+  - key: google-*
+    value: 'false'
+  - key: fuchsia-*
+    value: 'false'
+  - key: android-*
+    value: 'false'
+  - key: altera-*
+    value: 'false'
+  - key: abseil-*
+    value: 'false'
+  - key: boost-*
+    value: 'false'
+  - key: objc-*
+    value: 'false'
+  - key: openmp-*
+    value: 'false'
+  - key: zircon-*
+    value: 'false'
+  - key: misc-include-cleaner
+    value: 'false'
+  - key: readability-convert-member-functions-to-static
+    value: 'false'

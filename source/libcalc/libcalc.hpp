@@ -1,0 +1,131 @@
+#ifndef LIBCALC_HPP
+#define LIBCALC_HPP
+
+#include <concepts>
+#include <cstdint>
+
+namespace Calculator {
+
+/**
+ * @concept Arithmetic
+ * @brief A concept that checks whether a type is an arithmetic type.
+ */
+template <typename T>
+concept Arithmetic = std::is_arithmetic_v<T>;
+
+/**
+ * @concept Integral
+ * @brief A concept that checks whether a type is an integral type.
+ */
+template <typename T>
+concept Integral = std::integral<T>;
+
+/**
+ * @concept FloatingPoint
+ * @brief A concept that checks whether a type is a floating-point type.
+ */
+template <typename T>
+concept FloatingPoint = std::floating_point<T>;
+
+/**
+ * @class Calculator
+ * @brief A simple calculator class for basic mathematical operations, and a
+ * multithreaded factorial
+ *
+ * The Calculator class provides methods for performing common mathematical
+ * operations such as addition, subtraction, multiplication, division, and
+ * multithreaded factorial calculation. All the parameters are made auto for
+ * automatic template generation and type inferrence flexibility.
+ */
+class Calculator {
+public:
+	Calculator() = default;
+	~Calculator() = default;
+
+	/**
+	 * @brief Adds two integers.
+	 *
+	 * This function takes two integers, `lhs` and `rhs`, and returns their sum.
+	 *
+	 * @param lhs The number to which `rhs` is added.
+	 * @param rhs The number being added.
+	 * @returns The sum of `lhs` and `rhs`.
+	 */
+	[[nodiscard]] auto add(auto lhs, auto rhs) noexcept -> auto
+		requires Arithmetic<decltype(lhs)> && Arithmetic<decltype(rhs)>
+	{
+		return lhs + rhs;
+	}
+
+	/**
+	 * @brief Subtracts two integers.
+	 *
+	 * This function takes two integers, `lhs` and `rhs`, and returns their
+	 * difference.
+	 *
+	 * @param lhs The number from which `rhs` is subtracted.
+	 * @param rhs The number being subtracted.
+	 * @returns The difference between `lhs` and `rhs`.
+	 */
+	[[nodiscard]] auto subtract(auto lhs, auto rhs) noexcept -> auto
+		requires Arithmetic<decltype(lhs)> && Arithmetic<decltype(rhs)>
+	{
+		return lhs - rhs;
+	}
+
+	/**
+	 * @brief Multiplies two integers.
+	 *
+	 * This function takes two integers, `lhs` and `rhs`, and returns their
+	 * product.
+	 *
+	 * @param lhs The number to be multiplied.
+	 * @param rhs The number being multiplied.
+	 * @returns The product of `lhs` and `rhs`.
+	 */
+	[[nodiscard]] auto multiply(auto lhs, auto rhs) noexcept -> auto
+		requires Arithmetic<decltype(lhs)> && Arithmetic<decltype(rhs)>
+	{
+		return lhs * rhs;
+	}
+
+	/**
+	 * @brief Divides two integers.
+	 *
+	 * This function takes two integers, `lhs` (divisor) and `rhs` (dividend),
+	 * and returns the result of their division. If a number is divided by zero,
+	 * an exception is thrown.
+	 *
+	 * @param lhs The divisor.
+	 * @param rhs The dividend.
+	 * @returns The result of dividing `lhs` by `rhs`.
+	 */
+	[[nodiscard]] auto divide(auto lhs, auto rhs) -> auto
+		requires Arithmetic<decltype(lhs)> && Arithmetic<decltype(rhs)>
+	{
+		if (rhs == 0) {
+			throw std::logic_error("Attempted division by zero");
+		}
+		return lhs / rhs;
+	}
+
+	/**
+	 * @brief Calculates the factoral of an integer.
+	 *
+	 * This function takes an integer and calculates it's factorials using
+	 * multiple threads using dynamic programming strategy
+	 *
+	 * @param num The number who's factorial is to be calculated
+	 * @returns The factorial of `num`
+	 */
+	[[nodiscard]] auto factorial(auto num) -> auto
+		requires Integral<decltype(num)>
+	{
+		throw std::logic_error("Un-Implemented function, parameter: " +
+							   std::to_string(num));
+	}
+};
+
+} // namespace Calculator
+
+#endif // LIBCALC_HPP

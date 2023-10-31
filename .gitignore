@@ -1,2 +1,5 @@
 # The CMake build folder
 build/
+
+# VSCode config
+.vscode/
