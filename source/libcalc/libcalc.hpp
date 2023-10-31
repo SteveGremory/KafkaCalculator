@@ -150,4 +150,4 @@ private:
 
 } // namespace Calculator
 
-#endif // LIBCALC_HPP
+#endif /* LIBCALC_HPP */
