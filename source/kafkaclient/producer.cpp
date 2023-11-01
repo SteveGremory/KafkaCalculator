@@ -23,9 +23,11 @@ auto main(int argc, char** argv) -> int {
 	}
 
 	// Create an object to be sent
-	nlohmann::json json_obj = {{"operation", std::atoi(argv[1])},
-							   {"op1", std::atoi(argv[2])},
-							   {"op2", std::atoi(argv[3])}};
+	nlohmann::json json_obj = {
+		{"operation", std::atoi(argv[1])},
+		{"op1", argv[2]},
+		{"op2", argv[3]},
+	};
 
 	std::string json_str = json_obj.dump();
 

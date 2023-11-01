@@ -56,8 +56,7 @@ auto main() -> int {
 						nlohmann::json::parse(msg.get_payload());
 
 					// Access object properties
-					Operations operation =
-						static_cast<Operations>(json_obj["operation"]);
+					Operations operation = json_obj["operation"];
 					std::string op1_str = json_obj["op1"];
 					std::string op2_str = json_obj["op2"];
 
@@ -88,11 +87,11 @@ auto main() -> int {
 						result = calc.divide(op1, op2);
 						break;
 					}
-					// case Operations::FCT: {
-					//	std::cout << "Factorial";
-					//	result = calc.factorial(op1);
-					//	break;
-					// }
+					case Operations::FCT: {
+						std::cout << "Factorial";
+						result = calc.factorial(op1);
+						break;
+					}
 					default:
 						break;
 					};
