@@ -22,6 +22,13 @@ FetchContent_Declare(
     GIT_TAG        v3.0.1
 )
 
+# Fetch dependancy: Spdlog
+FetchContent_Declare(
+    spdlog
+    GIT_REPOSITORY https://github.com/gabime/spdlog
+    GIT_TAG        v1.12.0
+)
+
 # Fetch dependancy for CppKafka: librdkafka
 set(RDKAFKA_BUILD_EXAMPLES OFF ON CACHE INTERNAL "Turn off examples")
 set(RDKAFKA_BUILD_TESTS OFF CACHE INTERNAL "Turn off tests")
@@ -46,10 +53,11 @@ FetchContent_Declare(
     URL https://github.com/nlohmann/json/releases/download/v3.11.2/json.tar.xz
 )
 
-FetchContent_MakeAvailable(json)
 FetchContent_MakeAvailable(Catch2)
+FetchContent_MakeAvailable(spdlog)
 FetchContent_MakeAvailable(librdkafka)
 FetchContent_MakeAvailable(CppKafka)
+FetchContent_MakeAvailable(json)
 
 # Dependancy: GMP for high precision math
 find_package(GMP REQUIRED)
@@ -58,21 +66,26 @@ find_package(GMP REQUIRED)
 file(GLOB CALCULATOR_SOURCES source/libcalc/*.cpp)
 add_library(calc ${CALCULATOR_SOURCES})
 target_include_directories(calc PUBLIC source/)
-target_link_libraries(calc PUBLIC GMP::GMP)
+target_link_libraries(calc PUBLIC GMP::GMP spdlog::spdlog)
 
 # Setup the Kafka consumer/producer executable
 set(KAFKA_EXEC_LIBS
     calc rdkafka cppkafka GMP::GMP
-    nlohmann_json::nlohmann_json
+    nlohmann_json::nlohmann_json spdlog::spdlog
 )
+
+# Common functions
+add_library(kflib source/kafkaclient/kflib/kf.cpp)
+target_include_directories(kflib PUBLIC source/kafkaclient)
+target_link_libraries(kflib PUBLIC ${KAFKA_EXEC_LIBS})
 
 add_executable(kafka-producer source/kafkaclient/producer.cpp)
 target_include_directories(kafka-producer PUBLIC source/)
-target_link_libraries(kafka-producer PUBLIC ${KAFKA_EXEC_LIBS})
+target_link_libraries(kafka-producer PUBLIC ${KAFKA_EXEC_LIBS} kflib)
 
 add_executable(kafka-consumer source/kafkaclient/consumer.cpp)
 target_include_directories(kafka-consumer PUBLIC source/)
-target_link_libraries(kafka-consumer PUBLIC ${KAFKA_EXEC_LIBS})
+target_link_libraries(kafka-consumer PUBLIC ${KAFKA_EXEC_LIBS} kflib)
 
 
 # Turn clang-tidy off/on

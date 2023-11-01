@@ -2,40 +2,40 @@
 #include <nlohmann/json.hpp>
 
 #include <cstddef>
-#include <iostream>
+#include <filesystem>
 
-#include "kf.hpp"
+#include <kflib/kf.hpp>
 
 auto main(int argc, char** argv) -> int {
+	if (argc < 5) {
+		throw std::range_error("Not enough args: path, operation, op1, op2");
+	}
+
 	// Create a configuration for the producer
+	const auto json_config = KafkaClient::ConfigLoader::load_config(argv[1]);
 	cppkafka::Configuration config = {
-		{"metadata.broker.list", KAFKA_BROKER},
+		{"metadata.broker.list", json_config.kafka_broker},
 	};
 
 	// Create a Kafka producer instance
 	cppkafka::Producer producer(config);
 
 	// Create a message to send
-	cppkafka::MessageBuilder message("testing_topic");
-
-	if (argc < 4) {
-		throw std::range_error("Not enough args");
-	}
+	cppkafka::MessageBuilder message({json_config.kafka_topic});
 
 	// Create an object to be sent
 	nlohmann::json json_obj = {
-		{"operation", std::atoi(argv[1])},
-		{"op1", argv[2]},
-		{"op2", argv[3]},
+		{"operation", std::atoi(argv[2])},
+		{"op1", argv[3]},
+		{"op2", argv[4]},
 	};
-
 	std::string json_str = json_obj.dump();
 
 	message.payload(json_str);
 
-	// Send the message
 	producer.produce(message);
 
+	// Send the message
 	producer.flush();
 
 	return 0;

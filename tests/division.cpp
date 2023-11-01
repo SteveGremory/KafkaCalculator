@@ -23,6 +23,5 @@ TEST_CASE("Division is computed", "[division]") {
 	REQUIRE(res == true);
 
 	// Test case 5: Dividing by zero should not
-	// res = calc.divide(42, 0);
-	// REQUIRE_THROWS();
+	REQUIRE_THROWS(calc.divide(42, 0));
 }

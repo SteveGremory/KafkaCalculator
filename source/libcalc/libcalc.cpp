@@ -45,8 +45,8 @@ auto Calculator::calculate_factorial_range(const mpz_class& start,
 	const auto step = num / num_threads;
 
 	for (mpz_class i = 0; i < num_threads; ++i) {
-		const mpz_class start = i * step + 1;
-		const mpz_class end = (i == num_threads - 1) ? num : (i + 1) * step;
+		const mpz_class& start = i * step + 1;
+		const mpz_class& end = (i == num_threads - 1) ? num : (i + 1) * step;
 
 		threads.emplace_back(&Calculator::calculate_factorial_range, this,
 							 start, end);

@@ -3,6 +3,7 @@
 
 #include <concepts>
 #include <cstdint>
+#include <iostream>
 #include <mutex>
 #include <thread>
 
@@ -103,10 +104,12 @@ public:
 	[[nodiscard]] auto divide(const mpz_class& lhs, const mpz_class& rhs)
 		-> mpz_class;
 
-	[[nodiscard]] auto divide(const auto lhs, const auto rhs) noexcept
-		-> mpz_class
+	[[nodiscard]] auto divide(const auto lhs, const auto rhs) -> mpz_class
 		requires Arithmetic<decltype(lhs)> && Arithmetic<decltype(rhs)>
 	{
+		if (rhs == 0) {
+			throw std::logic_error("Cannot divide by 0");
+		}
 		return mpz_class(lhs) / mpz_class(rhs);
 	}
 
