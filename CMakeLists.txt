@@ -7,6 +7,11 @@ set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# Project options
+option(USE_CLANG_TIDY OFF "An option to turn off clang-tidy")
+find_package(Boost COMPONENTS program_options REQUIRED)
+
+# Fetching all the deps
 include(FetchContent)
 # Fetch dependancy: Catch2
 FetchContent_Declare(
@@ -33,80 +38,74 @@ FetchContent_Declare(
     GIT_TAG        v0.3.1
 )
 
+# Fetch dependancy: JSON Library
+FetchContent_Declare(
+    json
+    URL https://github.com/nlohmann/json/releases/download/v3.11.2/json.tar.xz
+)
 
+FetchContent_MakeAvailable(json)
 FetchContent_MakeAvailable(Catch2)
 FetchContent_MakeAvailable(librdkafka)
 FetchContent_MakeAvailable(CppKafka)
 
-# Find clang tidy
-find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
-set(CLANG_TIDY_COMMAND "${CLANG_TIDY_EXE}" "-checks=*,-llvmlibc-*,-google-*,-fuchsia-*,-android-*,-altera-*,-abseil-*,-boost-*,-objc-*,-openmp-*,-zircon-*,-misc-include-cleaner,-readability-convert-member-functions-to-static")
-
 # Setup the libcalc library
 file(GLOB CALCULATOR_SOURCES source/libcalc/*.cpp)
 add_library(calc ${CALCULATOR_SOURCES})
-set_target_properties(calc PROPERTIES
-    CXX_CLANG_TIDY "${CLANG_TIDY_COMMAND}"
-)
 target_include_directories(calc
     PUBLIC source/
 )
 
-# Setup the Kafka client executable
-file(GLOB KAFKACLIENT_SOURCES source/kafkaclient/*.cpp)
-add_executable(kafka-client ${KAFKACLIENT_SOURCES})
-set_target_properties(kafka-client PROPERTIES
-    CXX_CLANG_TIDY "${CLANG_TIDY_COMMAND}"
-)
-target_include_directories(kafka-client
-    PUBLIC source/
-)
-target_link_libraries(kafka-client PUBLIC
-    calc
-    rdkafka
-    cppkafka
+# Setup the Kafka consumer/producer executable
+set(KAFKA_EXEC_LIBS
+    calc rdkafka cppkafka
+    nlohmann_json::nlohmann_json
 )
 
-# Enable some compiler/linker options.
-set(ASAN_OPTIONS
+add_executable(kafka-producer source/kafkaclient/producer.cpp)
+target_include_directories(kafka-producer PUBLIC source/)
+target_link_libraries(kafka-producer PUBLIC ${KAFKA_EXEC_LIBS})
+
+add_executable(kafka-consumer source/kafkaclient/consumer.cpp)
+target_include_directories(kafka-consumer PUBLIC source/)
+target_link_libraries(kafka-consumer PUBLIC ${KAFKA_EXEC_LIBS})
+
+
+# Turn clang-tidy off/on
+if (USE_CLANG_TIDY)
+    # Find clang tidy
+    find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
+    set(CLANG_TIDY_COMMAND "${CLANG_TIDY_EXE}" "-checks=*,-llvmlibc-*,-google-*,-fuchsia-*,-android-*,-altera-*,-abseil-*,-boost-*,-objc-*,-openmp-*,-zircon-*,-misc-include-cleaner,-readability-convert-member-functions-to-static")
+
+    set_target_properties(calc PROPERTIES
+        CXX_CLANG_TIDY "${CLANG_TIDY_COMMAND}"
+    )
+    set_target_properties(kafka-producer PROPERTIES
+        CXX_CLANG_TIDY "${CLANG_TIDY_COMMAND}"
+    )
+    set_target_properties(kafka-consumer PROPERTIES
+        CXX_CLANG_TIDY "${CLANG_TIDY_COMMAND}"
+    )
+
+endif()
+
+# Set compiler flags
+set(COMPILER_FLAGS
+    # All the warnings
+    -Wall -Wextra
+    # Add asan options
     -fsanitize=address -fsanitize=pointer-compare
     -fsanitize=pointer-subtract -fsanitize=undefined
     -fsanitize=float-divide-by-zero -fsanitize=float-cast-overflow
-)
-
-target_compile_options(calc PUBLIC
-    # Error options
-    -Wall -Wextra
-    # Stack pointer
-    -fno-omit-frame-pointer
-    # Add asan options
-    ${ASAN_OPTIONS}
-    # Debug options
-    $<$<CONFIG:DEBUG>:-O0;-g3;-ggdb>
-)
-target_link_options(calc PUBLIC
-    # Add asan options
-    ${ASAN_OPTIONS}
     # Stack pointer
     -fno-omit-frame-pointer
 )
 
-target_compile_options(kafka-client PUBLIC
-    # Error options
-    -Wall -Wextra
-    # Stack pointer
-    -fno-omit-frame-pointer
-    # Add asan options
-    ${ASAN_OPTIONS}
-    # Debug options
-    $<$<CONFIG:DEBUG>:-O0;-g3;-ggdb>
-)
-target_link_options(kafka-client PUBLIC
-    # Add asan options
-    ${ASAN_OPTIONS}
-    # Stack pointer
-    -fno-omit-frame-pointer
-)
+target_compile_options(calc PUBLIC ${COMPILER_FLAGS})
+target_link_options(calc PUBLIC ${COMPILER_FLAGS})
+
+target_compile_options(kafka-producer PUBLIC ${COMPILER_FLAGS})
+target_link_options(kafka-producer PUBLIC ${COMPILER_FLAGS})
 
 # Get all C++ test files
 file(GLOB_RECURSE TESTS_SOURCES
@@ -118,5 +117,7 @@ add_executable(tests ${TESTS_SOURCES})
 target_link_libraries(tests
     PRIVATE Catch2::Catch2WithMain
     PRIVATE calc
+    PRIVATE rdkafka
+    PRIVATE cppkafka
 )
 
