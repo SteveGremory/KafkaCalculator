@@ -77,15 +77,15 @@ set(KAFKA_EXEC_LIBS
 # Common functions
 add_library(kflib source/kafkaclient/kflib/kf.cpp)
 target_include_directories(kflib PUBLIC source/kafkaclient)
-target_link_libraries(kflib PUBLIC ${KAFKA_EXEC_LIBS})
+target_link_libraries(kflib PUBLIC nlohmann_json::nlohmann_json)
 
 add_executable(kafka-producer source/kafkaclient/producer.cpp)
-target_include_directories(kafka-producer PUBLIC source/)
-target_link_libraries(kafka-producer PUBLIC ${KAFKA_EXEC_LIBS} kflib)
+target_include_directories(kafka-producer PUBLIC ${Boost_INCLUDE_DIR} source/)
+target_link_libraries(kafka-producer PUBLIC ${KAFKA_EXEC_LIBS} ${Boost_LIBRARIES} kflib)
 
 add_executable(kafka-consumer source/kafkaclient/consumer.cpp)
-target_include_directories(kafka-consumer PUBLIC source/)
-target_link_libraries(kafka-consumer PUBLIC ${KAFKA_EXEC_LIBS} kflib)
+target_include_directories(kafka-consumer PUBLIC ${Boost_INCLUDE_DIR} source/)
+target_link_libraries(kafka-consumer PUBLIC ${KAFKA_EXEC_LIBS} ${Boost_LIBRARIES} kflib)
 
 
 # Turn clang-tidy off/on
@@ -110,6 +110,8 @@ endif()
 set(COMPILER_FLAGS
     # All the warnings
     -Wall -Wextra
+    # Except for the ones that aren't mine
+    -Wno-deprecated -Wno-unused-parameter
     # Add asan options
     -fsanitize=address -fsanitize=pointer-compare
     -fsanitize=pointer-subtract -fsanitize=undefined

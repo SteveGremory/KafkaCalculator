@@ -1,3 +1,4 @@
+#include <boost/program_options.hpp>
 #include <cppkafka/cppkafka.h>
 #include <gmpxx.h>
 #include <nlohmann/json.hpp>
@@ -11,17 +12,42 @@
 #include <kflib/kf.hpp>
 #include <libcalc/libcalc.hpp>
 
+namespace po = boost::program_options;
+
 static bool running = true;
 
 auto main(int argc, char** argv) -> int {
 
-	if (argc <= 1) {
-		throw std::range_error("Not enough args");
+	std::string config_path{};
+
+	po::options_description desc("Allowed options");
+	desc.add_options()("help", "Display usage information")(
+		"config_path", po::value<std::string>(&config_path)->required(),
+		"Path to the config file");
+
+	po::variables_map vm;
+	try {
+		po::store(po::parse_command_line(argc, argv, desc), vm);
+
+		if (vm.count("help")) {
+			std::cout << desc << std::endl;
+			return 0;
+		} else if (!vm.count("config_path")) {
+			std::cerr << "Not enough arguments provided. Usage: " << desc
+					  << std::endl;
+			return 1;
+		}
+
+		po::notify(vm);
+	} catch (const std::exception& e) {
+		std::cerr << "Error: " << e.what() << std::endl;
+		return 1;
 	}
 
 	// Create the initial objects
 	auto calc = Calculator::Calculator();
-	const auto json_config = KafkaClient::ConfigLoader::load_config(argv[1]);
+	const auto json_config =
+		KafkaClient::ConfigLoader::load_config(config_path);
 
 	// Create a logger with console and file sinks
 	auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
@@ -34,10 +60,11 @@ auto main(int argc, char** argv) -> int {
 	// Future cleanup
 	signal(SIGINT, [](int) { running = false; });
 
-	auto config = cppkafka::Configuration(
-		{{"metadata.broker.list", json_config.kafka_broker},
-		 {"group.id", json_config.group_id},
-		 {"enable.auto.commit", false}});
+	auto config = cppkafka::Configuration({
+		{"metadata.broker.list", json_config.kafka_broker},
+		{"group.id", json_config.group_id},
+		{"enable.auto.commit", false},
+	});
 
 	// Create a Kafka consumer instance
 	auto consumer = cppkafka::Consumer(config);
