@@ -2,6 +2,11 @@
 
 A basic calculator that works with kafka.
 
+## Usage:
+
+**Consumer:** `./kafka-consumer --config_path ../kafkaconfig.json`
+**Producer:** `./kafka-producer add 1 2 --config_path ../kafkaconfig.json`
+
 # How does this work?
 
 ## Calculator
