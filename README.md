@@ -4,6 +4,11 @@ A basic calculator that works with kafka.
 
 ## Usage:
 
+### Note
+Remember to change `kafkaconfig.json` to suit your dev environment.
+
+After building, run these commands in the build directory:
+
 **Consumer:** `./kafka-consumer --config_path ../kafkaconfig.json`
 
 **Producer:** `./kafka-producer add 1 2 --config_path ../kafkaconfig.json`
@@ -62,7 +67,7 @@ To generate the makefile(s) for the project, run `cmake . -Bbuild` from the root
 
 ## Running
 
-To run the program, you must modify the `settings.json` file stored in the same folder as the executable to suit your environment. Here, you need to set:
+To run the program, you must modify the `kafkaconfig.json` file stored in the same folder as the executable to suit your environment. Here, you need to set:
 
 - The Kafka broker (kafka_broker)
 - The Kafka topic (kafka_topic)
