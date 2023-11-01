@@ -1,8 +1,12 @@
 #include <cppkafka/cppkafka.h>
 #include <nlohmann/json.hpp>
+#include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/spdlog.h>
 
 #include <cstddef>
 #include <filesystem>
+#include <memory>
 
 #include <kflib/kf.hpp>
 

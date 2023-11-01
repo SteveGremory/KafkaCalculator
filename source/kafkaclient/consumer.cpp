@@ -1,6 +1,8 @@
 #include <cppkafka/cppkafka.h>
 #include <gmpxx.h>
 #include <nlohmann/json.hpp>
+#include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
 #include <iostream>
@@ -17,12 +19,20 @@ auto main(int argc, char** argv) -> int {
 		throw std::range_error("Not enough args");
 	}
 
-	// Future cleanup
-	signal(SIGINT, [](int) { running = false; });
-
 	// Create the initial objects
 	auto calc = Calculator::Calculator();
 	const auto json_config = KafkaClient::ConfigLoader::load_config(argv[1]);
+
+	// Create a logger with console and file sinks
+	auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+	auto basic_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(
+		json_config.logfile);
+	std::vector<spdlog::sink_ptr> sinks{console_sink, basic_sink};
+	auto logger =
+		std::make_shared<spdlog::logger>("main", sinks.begin(), sinks.end());
+
+	// Future cleanup
+	signal(SIGINT, [](int) { running = false; });
 
 	auto config = cppkafka::Configuration(
 		{{"metadata.broker.list", json_config.kafka_broker},
@@ -37,20 +47,20 @@ auto main(int argc, char** argv) -> int {
 
 	// Print the assigned partitions on assignment
 	consumer.set_assignment_callback(
-		[](const cppkafka::TopicPartitionList& partitions) {
+		[&logger](const cppkafka::TopicPartitionList& partitions) {
 			std::stringstream ss("Got assigned: ");
 			ss << partitions;
 
-			spdlog::info(ss.str());
+			logger->info(ss.str());
 		});
 
 	// Print the revoked partitions on revocation
 	consumer.set_revocation_callback(
-		[](const cppkafka::TopicPartitionList& partitions) {
+		[&logger](const cppkafka::TopicPartitionList& partitions) {
 			std::stringstream ss("Got revoked: ");
 			ss << partitions;
 
-			spdlog::info(ss.str());
+			logger->info(ss.str());
 		});
 
 	// Initialise all the variables only once
@@ -75,7 +85,7 @@ auto main(int argc, char** argv) -> int {
 			if (msg.get_error()) {
 				// Ignore EOF notifications from rdkafka
 				if (!msg.is_eof()) {
-					spdlog::critical("Received error notification: {}",
+					logger->critical("Received error notification: {}",
 									 msg.get_error().to_string());
 				}
 			} else {
@@ -132,12 +142,12 @@ auto main(int argc, char** argv) -> int {
 						break;
 					};
 
-					spdlog::info("Operation: {} -> {}", operation_name,
+					logger->info("Operation: {} -> {}", operation_name,
 								 result.get_str());
 
 				} catch (const std::exception& e) {
 					// Catch and handle the exception
-					spdlog::critical("An exception occurred: {}", e.what());
+					logger->critical("An exception occurred: {}", e.what());
 				}
 			}
 
@@ -146,6 +156,8 @@ auto main(int argc, char** argv) -> int {
 
 			// Now commit the message
 			consumer.commit(msg);
+			// and write to the log
+			logger->flush();
 		}
 	}
 
