@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.22)
 project("Kafka Calculator")
 
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules")
+
 # Set C++ options
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_BUILD_TYPE Debug)
@@ -49,16 +51,18 @@ FetchContent_MakeAvailable(Catch2)
 FetchContent_MakeAvailable(librdkafka)
 FetchContent_MakeAvailable(CppKafka)
 
+# Dependancy: GMP for high precision math
+find_package(GMP REQUIRED)
+
 # Setup the libcalc library
 file(GLOB CALCULATOR_SOURCES source/libcalc/*.cpp)
 add_library(calc ${CALCULATOR_SOURCES})
-target_include_directories(calc
-    PUBLIC source/
-)
+target_include_directories(calc PUBLIC source/)
+target_link_libraries(calc PUBLIC GMP::GMP)
 
 # Setup the Kafka consumer/producer executable
 set(KAFKA_EXEC_LIBS
-    calc rdkafka cppkafka
+    calc rdkafka cppkafka GMP::GMP
     nlohmann_json::nlohmann_json
 )
 

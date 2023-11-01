@@ -1,12 +1,33 @@
 #include "libcalc.hpp"
 
 namespace Calculator {
-Calculator::Calculator() : result(1) {}
 
-auto Calculator::calculate_factorial_range(const uint64_t start,
-										   const uint64_t end) noexcept
+[[nodiscard]] auto Calculator::add(const mpz_class& lhs,
+								   const mpz_class& rhs) noexcept -> mpz_class {
+	return lhs + rhs;
+}
+
+[[nodiscard]] auto Calculator::subtract(const mpz_class& lhs,
+										const mpz_class& rhs) noexcept
+	-> mpz_class {
+	return lhs - rhs;
+}
+
+[[nodiscard]] auto Calculator::multiply(const mpz_class& lhs,
+										const mpz_class& rhs) noexcept
+	-> mpz_class {
+	return lhs * rhs;
+}
+
+[[nodiscard]] auto Calculator::divide(const mpz_class& lhs,
+									  const mpz_class& rhs) -> mpz_class {
+	return lhs / rhs;
+}
+
+auto Calculator::calculate_factorial_range(const mpz_class& start,
+										   const mpz_class& end) noexcept
 	-> void {
-	uint64_t local_result = 1;
+	mpz_class local_result = 1;
 	for (auto i = start; i <= end; ++i) {
 		local_result *= i;
 	}
@@ -15,17 +36,17 @@ auto Calculator::calculate_factorial_range(const uint64_t start,
 	this->result *= local_result;
 }
 
-[[nodiscard]] auto Calculator::factorial(const uint64_t num) -> uint64_t {
+[[nodiscard]] auto Calculator::factorial(const mpz_class& num) -> mpz_class {
 	this->result = 1;
 
 	auto threads = std::vector<std::thread>{};
 
-	const uint64_t num_threads = std::thread::hardware_concurrency();
-	const uint64_t step = floor(num / num_threads);
+	const auto num_threads = std::thread::hardware_concurrency();
+	const auto step = num / num_threads;
 
-	for (uint64_t i = 0; i < num_threads; ++i) {
-		const uint64_t start = i * step + 1;
-		const uint64_t end = (i == num_threads - 1) ? num : (i + 1) * step;
+	for (mpz_class i = 0; i < num_threads; ++i) {
+		const mpz_class start = i * step + 1;
+		const mpz_class end = (i == num_threads - 1) ? num : (i + 1) * step;
 
 		threads.emplace_back(&Calculator::calculate_factorial_range, this,
 							 start, end);

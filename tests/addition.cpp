@@ -3,18 +3,20 @@
 
 #include <limits>
 
-// Max int with type info
-constexpr int64_t INT32_MAX_T = INT32_MAX;
-
 TEST_CASE("Addition is computed", "[addition]") {
 	auto calc = Calculator::Calculator();
 
+	bool res{false};
+
 	// Test case 1: Adding positive integers
-	REQUIRE(calc.add(2, 4) == 6);
+	res = calc.add(2, 4) == 6;
+	REQUIRE(res == true);
 
 	// Test case 2: Adding positive integers with a larger result
-	REQUIRE(calc.add(INT32_MAX_T, INT32_MAX_T) == 4294967294);
+	res = calc.add(INT32_MAX, INT32_MAX) == 4294967294;
+	REQUIRE(res == true);
 
 	// Test case 3: Adding a positive and a negative integer
-	REQUIRE(calc.add(-5, 3) == -2);
+	res = calc.add(-5, 3) == -2;
+	REQUIRE(res == true);
 }

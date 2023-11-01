@@ -5,6 +5,7 @@
 #include <signal.h>
 
 #include "kf.hpp"
+#include <gmpxx.h>
 #include <libcalc/libcalc.hpp>
 
 static bool running = true;
@@ -57,10 +58,13 @@ auto main() -> int {
 					// Access object properties
 					Operations operation =
 						static_cast<Operations>(json_obj["operation"]);
-					int64_t op1 = json_obj["op1"];
-					int64_t op2 = json_obj["op2"];
+					std::string op1_str = json_obj["op1"];
+					std::string op2_str = json_obj["op2"];
 
-					int64_t result = 0;
+					mpz_class op1{op1_str};
+					mpz_class op2{op2_str};
+
+					mpz_class result{};
 
 					std::cout << "Operation: ";
 					switch (operation) {
@@ -84,15 +88,15 @@ auto main() -> int {
 						result = calc.divide(op1, op2);
 						break;
 					}
-					case Operations::FCT: {
-						std::cout << "Factorial";
-						result = calc.factorial(op1);
-						break;
-					}
+					// case Operations::FCT: {
+					//	std::cout << "Factorial";
+					//	result = calc.factorial(op1);
+					//	break;
+					// }
 					default:
 						break;
 					};
-					std::cout << " -> " << result << std::endl;
+					std::cout << " -> " << result.get_str() << std::endl;
 
 				} catch (const std::exception& e) {
 					// Catch and handle the exception

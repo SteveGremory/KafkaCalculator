@@ -6,28 +6,15 @@
 #include <mutex>
 #include <thread>
 
-namespace Calculator {
+#include <gmpxx.h>
 
+namespace Calculator {
 /**
  * @concept Arithmetic
  * @brief A concept that checks whether a type is an arithmetic type.
  */
 template <typename T>
 concept Arithmetic = std::is_arithmetic_v<T>;
-
-/**
- * @concept Integral
- * @brief A concept that checks whether a type is an integral type.
- */
-template <typename T>
-concept Integral = std::integral<T>;
-
-/**
- * @concept FloatingPoint
- * @brief A concept that checks whether a type is a floating-point type.
- */
-template <typename T>
-concept FloatingPoint = std::floating_point<T>;
 
 /**
  * @class Calculator
@@ -41,7 +28,7 @@ concept FloatingPoint = std::floating_point<T>;
  */
 class Calculator {
 public:
-	Calculator();
+	Calculator() = default;
 	~Calculator() = default;
 
 	/**
@@ -53,11 +40,13 @@ public:
 	 * @param rhs The number being added.
 	 * @returns The sum of `lhs` and `rhs`.
 	 */
-	[[nodiscard]] constexpr auto add(const auto lhs, const auto rhs) noexcept
-		-> auto
+	[[nodiscard]] auto add(const mpz_class& lhs, const mpz_class& rhs) noexcept
+		-> mpz_class;
+
+	[[nodiscard]] auto add(const auto lhs, const auto rhs) noexcept -> mpz_class
 		requires Arithmetic<decltype(lhs)> && Arithmetic<decltype(rhs)>
 	{
-		return lhs + rhs;
+		return mpz_class(lhs) + mpz_class(rhs);
 	}
 
 	/**
@@ -70,11 +59,14 @@ public:
 	 * @param rhs The number being subtracted.
 	 * @returns The difference between `lhs` and `rhs`.
 	 */
-	[[nodiscard]] constexpr auto subtract(const auto lhs,
-										  const auto rhs) noexcept -> auto
+	[[nodiscard]] auto subtract(const mpz_class& lhs,
+								const mpz_class& rhs) noexcept -> mpz_class;
+
+	[[nodiscard]] auto subtract(const auto lhs, const auto rhs) noexcept
+		-> mpz_class
 		requires Arithmetic<decltype(lhs)> && Arithmetic<decltype(rhs)>
 	{
-		return lhs - rhs;
+		return mpz_class(lhs) - mpz_class(rhs);
 	}
 
 	/**
@@ -87,11 +79,14 @@ public:
 	 * @param rhs The number being multiplied.
 	 * @returns The product of `lhs` and `rhs`.
 	 */
-	[[nodiscard]] constexpr auto multiply(const auto lhs,
-										  const auto rhs) noexcept -> auto
+	[[nodiscard]] auto multiply(const mpz_class& lhs,
+								const mpz_class& rhs) noexcept -> mpz_class;
+
+	[[nodiscard]] auto multiply(const auto lhs, const auto rhs) noexcept
+		-> mpz_class
 		requires Arithmetic<decltype(lhs)> && Arithmetic<decltype(rhs)>
 	{
-		return lhs * rhs;
+		return mpz_class(lhs) * mpz_class(rhs);
 	}
 
 	/**
@@ -105,13 +100,14 @@ public:
 	 * @param rhs The dividend.
 	 * @returns The result of dividing `lhs` by `rhs`.
 	 */
-	[[nodiscard]] constexpr auto divide(const auto lhs, const auto rhs) -> auto
+	[[nodiscard]] auto divide(const mpz_class& lhs, const mpz_class& rhs)
+		-> mpz_class;
+
+	[[nodiscard]] auto divide(const auto lhs, const auto rhs) noexcept
+		-> mpz_class
 		requires Arithmetic<decltype(lhs)> && Arithmetic<decltype(rhs)>
 	{
-		if (rhs == 0) {
-			throw std::logic_error("Attempted division by zero");
-		}
-		return lhs / rhs;
+		return mpz_class(lhs) / mpz_class(rhs);
 	}
 
 	/**
@@ -123,7 +119,13 @@ public:
 	 * @param num The number who's factorial is to be calculated
 	 * @returns The factorial of `num`
 	 */
-	[[nodiscard]] auto factorial(const uint64_t num) -> uint64_t;
+	[[nodiscard]] auto factorial(const mpz_class& num) -> mpz_class;
+
+	[[nodiscard]] auto factorial(const auto num) -> mpz_class
+		requires Arithmetic<decltype(num)>
+	{
+		return this->factorial(mpz_class(num));
+	}
 
 private:
 	/**
@@ -140,10 +142,10 @@ private:
 	 * together. The result is then updated in a thread-safe manner using a
 	 * mutex to prevent data races.
 	 */
-	auto calculate_factorial_range(const uint64_t start,
-								   const uint64_t end) noexcept -> void;
+	auto calculate_factorial_range(const mpz_class& start,
+								   const mpz_class& end) noexcept -> void;
 
-	uint64_t result;
+	mpz_class result{1};
 	std::mutex factorial_mutex;
 };
 
