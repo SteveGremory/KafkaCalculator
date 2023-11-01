@@ -10,6 +10,34 @@ The calculator class has basic math functions that work with Integers. The GNU M
 
 The factorial function uses all available threads to divide it into `num / num_threads` steps which are then separately calculated by separate threads.
 
+## Kafka Connection
+
+The producer/consumer executables deal with the Kafka part of the project, they require a config file to run. An example is provided the project by the name `kafkaconfig.json`. The consumer takes data from Kafka and uses the Calculator class to perform the operation. The data must be in JSON format that follows the following structure:
+
+```json
+{
+  "operation": 0,
+  "op1": 12,
+  "op2": 12
+}
+```
+
+Where `operation` is an int that maps to the enum class that has the following mapping:
+
+```
+ADD -> 0
+SUB -> 1
+MUL -> 2
+DIV -> 3
+FCT -> 4
+```
+
+and `op1` & `op2` are the operands on which the operation is to be performed.
+
+### Note:
+
+In case of a **factorial**, the 2nd option doesn't matter but **has to be provided.**
+
 # Build instructions
 
 ## Dependencies
@@ -24,7 +52,7 @@ All the other required libraries are automatically fetched and built using CMake
 
 ## Compilation
 
-To generate the makefile(s) for the project, run `cmake . -Bbuild` from the root of the project, then change the current working directly to `build/` and run the generator that was used by CMake, on UNIX-like systems, it's mostly either Make or Ninja.
+To generate the makefile(s) for the project, run `cmake . -Bbuild` from the root of the project, then change the current working directly to `build/` and run the generator that was used by CMake, on UNIX-like systems, it's mostly either `make` or `ninja`.
 
 ## Running
 
